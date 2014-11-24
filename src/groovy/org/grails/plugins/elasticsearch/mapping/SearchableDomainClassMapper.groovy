@@ -34,6 +34,7 @@ class SearchableDomainClassMapper extends GroovyObjectSupport {
     private GrailsApplication grailsApplication
     private only
     private except
+    private transientProperties
 
     private ConfigObject esConfig
 
@@ -64,6 +65,10 @@ class SearchableDomainClassMapper extends GroovyObjectSupport {
 
     void setExcept(except) {
         this.except = except
+    }
+
+    void setTransientProperties(properties) {
+        this.transientProperties = properties
     }
 
     void root(Boolean rootFlag) {
@@ -203,6 +208,7 @@ class SearchableDomainClassMapper extends GroovyObjectSupport {
     private void buildMappingFromOnlyExcept(GrailsDomainClass domainClass, Set<String> inheritedProperties) {
         Set<String> propsOnly = convertToSet(only)
         Set<String> propsExcept = convertToSet(except)
+        Set<String> propsTransient = convertToSet(transientProperties)
         if (!propsOnly.isEmpty() && !propsExcept.isEmpty()) {
             throw new IllegalArgumentException("Both 'only' and 'except' were used in '${grailsDomainClass.getPropertyName()}#${getSearchablePropertyName()}': provide one or neither but not both")
         }
@@ -214,6 +220,11 @@ class SearchableDomainClassMapper extends GroovyObjectSupport {
         if (!propsExcept.isEmpty()) {
             mappableProperties.removeAll(propsExcept)
         }
+
+        if(!propsTransient.isEmpty()) {
+            mappableProperties.addAll(propsTransient)
+        }
+
         // Only keep the properties specified in the "only" rule
         if (!propsOnly.isEmpty()) {
             // If we have inherited properties, we keep them nonetheless
